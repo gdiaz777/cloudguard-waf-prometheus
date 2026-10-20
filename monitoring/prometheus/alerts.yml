@@ -1,0 +1,39 @@
+groups:
+  - name: cloudguard-waf
+    rules:
+      - alert: WafAgentMetricsDown
+        expr: up{job="openappsec"} == 0
+        for: 2m
+        labels: {severity: critical}
+        annotations:
+          summary: "Sin métricas del agente WAF {{ $labels.instance }}"
+          description: "Prometheus no puede leer :7465. Agente caído, servicio cp-nano-prometheus parado o puerto filtrado."
+
+      - alert: WafDetectionSpike
+        # Coincidencias IPS (detect + prevent) en 5 min por agente. Ajustar el umbral a la línea base del cliente.
+        expr: |
+          sum by (gateway, agent) (
+              sum_over_time(detect_action_matches_counter[5m])
+            + sum_over_time(prevent_action_matches_counter[5m])
+          ) > 500
+        for: 5m
+        labels: {severity: warning}
+        annotations:
+          summary: "Pico de detecciones en el WAF (gateway {{ $labels.gateway }})"
+          description: "{{ $value }} coincidencias IPS en los últimos 5 min."
+
+      - alert: WafNanoServiceRestarts
+        # El contador del watchdog sube fuera de cambios de política -> servicio inestable
+        expr: |
+          max by (gateway, agent) (max_over_time(nano_service_restarts_counter[15m]))
+            - max by (gateway, agent) (max_over_time(nano_service_restarts_counter[15m] offset 15m)) > 0
+        labels: {severity: warning}
+        annotations:
+          summary: "Reinicios de nano-servicios en el gateway {{ $labels.gateway }}"
+
+      - alert: WafApiExporterFailing
+        expr: cpwaf_api_up == 0
+        for: 10m
+        labels: {severity: info}
+        annotations:
+          summary: "El exporter no puede consultar la API de Infinity Portal (credenciales, región o conectividad)"

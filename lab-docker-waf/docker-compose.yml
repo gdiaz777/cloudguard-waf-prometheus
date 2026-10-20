@@ -1,0 +1,31 @@
+# Laboratorio: WAF CloudGuard en Docker (single container, NGINX autogestionado) + app vulnerable.
+# Solo para pruebas. En VMware este fichero no se usa: el WAF es la VM.
+name: waf-lab
+
+services:
+  appsec:
+    image: checkpoint/cloudguard-appsec-standalone:latest
+    container_name: appsec-agent
+    # --nginx-self-managed => en el perfil está marcado "I want to manage NGINX myself"
+    command: ["/cloudguard-appsec-standalone", "--token", "${APPSEC_TOKEN:?Define APPSEC_TOKEN en .env}", "--nginx-self-managed"]
+    environment:
+      - https_proxy=${HTTPS_PROXY:-}
+    ports:
+      - "80:80"
+      - "443:443"
+      - "7465:7465"   # métricas Prometheus (requiere prometheus=true en el perfil)
+    volumes:
+      - ./nginx/conf.d:/etc/nginx/conf.d        # configuración de NGINX (la gestionamos nosotros)
+      - ./nginx/certs:/etc/nginx/certs:ro       # certificado TLS (scripts/gen-cert.sh)
+      - ./agent/conf:/etc/cp/conf               # persistencia: registro y política del agente
+      - ./agent/data:/etc/cp/data
+      - ./agent/logs:/var/log/nano_agent
+    depends_on: [juiceshop]
+    stdin_open: true
+    tty: true
+    restart: unless-stopped
+
+  juiceshop:
+    image: bkimminich/juice-shop:latest
+    container_name: juiceshop
+    restart: unless-stopped

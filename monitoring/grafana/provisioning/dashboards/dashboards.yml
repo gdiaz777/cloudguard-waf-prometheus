@@ -1,0 +1,7 @@
+apiVersion: 1
+providers:
+  - name: cloudguard-waf
+    folder: CloudGuard WAF
+    type: file
+    options:
+      path: /var/lib/grafana/dashboards

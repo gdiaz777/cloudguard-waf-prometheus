@@ -1,0 +1,4 @@
+# Exporter opcional de la API de Infinity Portal.
+# Descomenta tras arrancar: docker compose --profile api up -d
+# - targets: ["waf-api-exporter:9466"]
+[]

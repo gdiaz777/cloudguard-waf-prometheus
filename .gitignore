@@ -1,0 +1,17 @@
+# Secretos
+.env
+**/.env
+
+# Certificados y claves
+*.key
+*.pem
+lab-docker-waf/nginx/certs/
+
+# Estado del agente (registro, política, logs)
+lab-docker-waf/agent/
+
+# Varios
+.playwright-mcp/
+__pycache__/
+*.pyc
+.DS_Store
