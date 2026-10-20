@@ -1,45 +1,45 @@
 # 3. Grafana
 
-Igual para **Docker y VMware**.
+Same for **Docker and VMware**.
 
-## 3.1 Con el stack de este repo
+## 3.1 With this repository's stack
 
-No hay que configurar nada. Al arrancar, Grafana carga:
+Nothing to configure. On startup, Grafana loads:
 
-- **Datasource** `Prometheus` (uid `prometheus`) → `monitoring/grafana/provisioning/datasources/prometheus.yml`
-- **Dashboard** *CloudGuard WAF - Prometheus* en la carpeta *CloudGuard WAF* → `monitoring/grafana/dashboards/cloudguard-waf.json`
+- the `Prometheus` **datasource** (uid `prometheus`) → `monitoring/grafana/provisioning/datasources/prometheus.yml`
+- the *CloudGuard WAF - Prometheus* **dashboard** in the *CloudGuard WAF* folder → `monitoring/grafana/dashboards/cloudguard-waf.json`
 
-Pasos:
+Steps:
 
-1. Abre `http://<servidor>:3000`.
-2. Inicia sesión con `GRAFANA_USER` / `GRAFANA_PASSWORD` de `.env`.
+1. Open `http://<server>:3000`.
+2. Log in with `GRAFANA_USER` / `GRAFANA_PASSWORD` from `.env`.
 3. **Dashboards → CloudGuard WAF → CloudGuard WAF - Prometheus**.
-4. Arriba a la izquierda, el selector **Gateway** filtra por la etiqueta `gateway` de `waf-agents.yml`.
+4. The **Gateway** selector at the top left filters by the `gateway` label from `waf-agents.yml`.
 
-## 3.2 En un Grafana existente
+## 3.2 In an existing Grafana
 
 1. **Dashboards → New → Import**.
-2. Sube `monitoring/grafana/dashboards/cloudguard-waf.json`.
-3. Si su datasource Prometheus no tiene uid `prometheus`, edita el JSON antes de importarlo y sustituye `"uid": "prometheus"` por el uid correcto (lo ves en *Connections → Data sources → <datasource>*, en la URL).
+2. Upload `monitoring/grafana/dashboards/cloudguard-waf.json`.
+3. If their Prometheus datasource does not have uid `prometheus`, edit the JSON before importing it and replace `"uid": "prometheus"` with the right uid (it is in the URL of *Connections → Data sources → <datasource>*).
 
-## 3.3 Paneles
+## 3.3 Panels
 
-| Fila | Panel | Qué muestra |
+| Row | Panel | What it shows |
 | --- | --- | --- |
-| Agente | Scrape del agente | UP/DOWN de cada WAF |
-| Agente | Detecciones IPS (rango) | Total aproximado de coincidencias IPS en modo detect en el rango de tiempo elegido |
-| Agente | Prevenciones IPS (rango) | Igual, en modo prevent |
-| Agente | Reinicios de nano-servicios | Contador del watchdog |
-| Agente | Assets protegidos | Número de assets del agente |
-| Agente | Coincidencias del motor IPS por minuto | detect / prevent / ignore por gateway |
-| Agente | CPU por proceso | % de CPU de cada nano-servicio |
-| Agente | Memoria física por proceso | RSS de cada nano-servicio (el handler suma todos sus workers) |
-| Por asset (opcional) | API de gestión / Resumen por asset / Peticiones por asset / Maliciosas por asset | Requieren el exporter de la API ([05](05-exporter-api-por-asset.md)) |
+| Agent | Agent scrape | UP/DOWN for each WAF |
+| Agent | IPS detections (range) | Approximate total of IPS matches in detect mode over the selected time range |
+| Agent | IPS preventions (range) | Same, in prevent mode |
+| Agent | Nano-service restarts | Watchdog counter |
+| Agent | Protected assets | Number of assets on the agent |
+| Agent | IPS engine matches per minute | detect / prevent / ignore per gateway |
+| Agent | CPU per process | CPU % of each nano-service |
+| Agent | Physical memory per process | RSS of each nano-service (the handler adds up all its workers) |
+| Per asset (optional) | Management API / Per-asset summary / Requests per asset / Malicious requests per asset | Require the API exporter ([05](05-per-asset-api-exporter.md)) |
 
-Si no activas el exporter, la fila *por asset* aparece vacía. Puedes plegarla o borrarla.
+If you do not enable the exporter, the *per asset* row stays empty. You can collapse it or delete it.
 
-## 3.4 Personalizar
+## 3.4 Customizing
 
-Las consultas siguen las reglas de [04-metricas-y-promql.md](04-metricas-y-promql.md). Léelo antes de crear paneles nuevos: las métricas del agente **no son contadores acumulados** y `rate()` da resultados incorrectos.
+Queries follow the rules in [04-metrics-and-promql.md](04-metrics-and-promql.md). Read it before you build new panels: the agent's metrics **are not cumulative counters**, and `rate()` gives wrong results.
 
-Siguiente: [04-metricas-y-promql.md](04-metricas-y-promql.md)
+Next: [04-metrics-and-promql.md](04-metrics-and-promql.md)

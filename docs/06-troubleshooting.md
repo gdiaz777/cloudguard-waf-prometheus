@@ -1,50 +1,50 @@
 # 6. Troubleshooting
 
-Donde dice **Docker**, ejecuta los comandos con `docker exec <contenedor-waf> …`. Donde dice **VMware**, ejecútalos por SSH en la VM con el usuario `admin`. Donde no se indica, aplica a los dos.
+Where it says **Docker**, run the commands with `docker exec <waf-container> …`. Where it says **VMware**, run them over SSH on the VM as `admin`. Where nothing is stated, it applies to both.
 
-## 6.1 Tabla de síntomas
+## 6.1 Symptoms
 
-| Síntoma | Causa probable | Comprobación / solución |
+| Symptom | Likely cause | Check / fix |
 | --- | --- | --- |
-| Nada escucha en el 7465 | El ajuste no ha llegado | `cpnano -s` (registro OK). Revisa que `prometheus=true` está en el **perfil correcto** y que se hizo **Enforce**. Espera 1–2 min |
-| **Docker:** target DOWN, pero `docker exec … curl localhost:7465/metrics` funciona | Puerto no publicado | Añade `-p 7465:7465` y recrea el contenedor |
-| **VMware:** target DOWN, pero `curl localhost:7465/metrics` funciona en la VM | Red o firewall | `curl http://<IP-VM>:7465/metrics` desde Prometheus. Abre TCP 7465 solo desde esa IP |
-| Target DOWN con `context deadline exceeded` | Latencia o filtrado parcial | Revisa la ruta de red y sube `scrape_timeout` (por defecto 10 s) |
-| Series que saltan a 0 o desaparecen un instante | Muestras por ventana; algún worker no responde a tiempo | Normal. Usa `sum_over_time` / `max_over_time` ([04](04-metricas-y-promql.md)) |
-| `rate()` da valores absurdos | Las métricas no son contadores acumulados | Usa `sum_over_time` |
-| Las series tienen `exported_agent` en vez de `agent` | Se definió la etiqueta `agent` en `waf-agents.yml` | Renómbrala a `gateway` |
-| Durante unos segundos tras activar el ajuste no hubo inspección | Reinicio de nano-servicios | Esperado; hazlo en ventana de cambio |
-| `nano_service_restarts_counter` alto desde el principio | Cuenta todos los arranques desde que se inició el agente | Vigila si **sube**, no el valor absoluto |
-| Faltan métricas de tipos de ataque o peticiones | No se exportan en la versión probada | Ver [04 §4.2](04-metricas-y-promql.md#42-lo-que-no-publica-aunque-la-documentación-lo-enumera) |
-| Grafana: panel "No data" | Datasource o etiqueta `gateway` | Comprueba en Prometheus `up{job="openappsec"}` y que exista la etiqueta `gateway` |
+| Nothing listens on 7465 | The setting has not arrived | `cpnano -s` (registration OK). Check that `prometheus=true` is on the **right profile** and that **Enforce** was done. Wait 1–2 min |
+| **Docker:** target DOWN, but `docker exec … curl localhost:7465/metrics` works | Port not published | Add `-p 7465:7465` and recreate the container |
+| **VMware:** target DOWN, but `curl localhost:7465/metrics` works on the VM | Network or firewall | Run `curl http://<VM-IP>:7465/metrics` from Prometheus. Allow TCP 7465 from that IP only |
+| Target DOWN with `context deadline exceeded` | Latency or partial filtering | Check the network path and raise `scrape_timeout` (default 10 s) |
+| Series that drop to 0 or briefly disappear | Per-window samples; a worker did not answer in time | Expected. Use `sum_over_time` / `max_over_time` ([04](04-metrics-and-promql.md)) |
+| `rate()` returns absurd values | The metrics are not cumulative counters | Use `sum_over_time` |
+| Series carry `exported_agent` instead of `agent` | An `agent` label was set in `waf-agents.yml` | Rename it to `gateway` |
+| No inspection for a few seconds after enabling the setting | Nano-service restart | Expected; do it in a change window |
+| `nano_service_restarts_counter` is high from the start | It counts every start since the agent was launched | Watch whether it **increases**, not its absolute value |
+| Attack-type or request metrics are missing | Not exported in the tested version | See [04 §4.2](04-metrics-and-promql.md#42-what-it-does-not-publish-although-the-documentation-lists-it) |
+| Grafana: "No data" panel | Datasource or `gateway` label | In Prometheus, check `up{job="openappsec"}` and that the `gateway` label exists |
 
-## 6.2 Comandos útiles en el WAF
+## 6.2 Useful commands on the WAF
 
 ```bash
-cpnano -s                                       # estado, política, registro, versión
-netstat -ltnp | grep 7465                       # servicio cp-nano-prometheus
-curl -s http://localhost:7465/metrics | grep '^# TYPE' | sort -u   # catálogo publicado
-tail -f /var/log/nano_agent/cp-nano-prometheus.dbg                 # log del servicio
+cpnano -s                                       # status, policy, registration, version
+netstat -ltnp | grep 7465                       # cp-nano-prometheus service
+curl -s http://localhost:7465/metrics | grep '^# TYPE' | sort -u   # published catalog
+tail -f /var/log/nano_agent/cp-nano-prometheus.dbg                 # service log
 
-# Lo que agrega cp-nano-prometheus (endpoints internos)
-curl -s http://127.0.0.1:7777/service-metrics   # orquestador
-curl -s http://127.0.0.1:12000/service-metrics  # primer worker del HTTP Transaction Handler
+# What cp-nano-prometheus aggregates (internal endpoints)
+curl -s http://127.0.0.1:7777/service-metrics   # orchestrator
+curl -s http://127.0.0.1:12000/service-metrics  # first HTTP Transaction Handler worker
 ```
 
-En el log `cp-nano-prometheus.dbg` es normal ver `Failed to get service metrics. Service: <host>_<n>` justo después de un reinicio, mientras arrancan los workers.
+Right after a restart, it is normal to see `Failed to get service metrics. Service: <host>_<n>` in `cp-nano-prometheus.dbg` while the workers start up.
 
-## 6.3 Debug avanzado
+## 6.3 Advanced debug
 
-Para comprobar si el handler calcula la telemetría WAAP:
+To check whether the handler computes WAAP telemetry:
 
 ```bash
 cpnano --debug --set --service http-transaction-handler --flags D_WAAP=Trace
-# genera tráfico y busca:
+# generate traffic and look for:
 grep -h "telemetry" /var/log/nano_agent/cp-nano-http-transaction-handler.dbg* | tail
-# MUY IMPORTANTE: vuelve al nivel por defecto (genera mucho log)
+# VERY IMPORTANT: go back to the default level (it generates a lot of logs)
 cpnano --debug --default --service http-transaction-handler
 ```
 
-## 6.4 Desactivar las métricas
+## 6.4 Disable metrics
 
-Borra la Advanced Setting `prometheus` del perfil (o ponla a `false`) y haz **Publish + Enforce**. No se ha probado en laboratorio, pero es previsible que los nano-servicios se reinicien de nuevo, igual que al activarlo: hazlo también en ventana de cambio.
+Remove the `prometheus` Advanced Setting from the profile (or set it to `false`) and do **Publish + Enforce**. This was not tested in the lab, but the nano-services will most likely restart again, as they do when you enable it: do this in a change window too.

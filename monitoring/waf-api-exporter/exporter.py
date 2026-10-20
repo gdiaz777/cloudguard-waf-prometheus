@@ -1,7 +1,7 @@
-"""Exporter Prometheus de estadísticas por asset de CloudGuard WAF.
+"""Prometheus exporter for CloudGuard WAF per-asset statistics.
 
-Basado en el script waf-stats.sh (gist mkol5222): consulta la API GraphQL de
-Infinity Portal y expone getAssetStatistics de cada WebApplication como métricas.
+Based on the waf-stats.sh script (gist mkol5222): queries the Infinity Portal
+GraphQL API and exposes getAssetStatistics for each WebApplication as metrics.
 """
 import logging
 import os
@@ -16,7 +16,7 @@ CLIENT_ID = os.environ["WAF_API_KEY"]
 SECRET = os.environ["WAF_API_KEY_SECRET"]
 PORT = int(os.environ.get("EXPORTER_PORT", "9466"))
 CACHE_SECONDS = int(os.environ.get("CACHE_SECONDS", "60"))
-TOKEN_TTL = 25 * 60  # el token de Infinity Portal caduca a los 30 min
+TOKEN_TTL = 25 * 60  # Infinity Portal tokens expire after 30 min
 
 ASSETS_QUERY = """query assets { getAssets(userDefined: true) { status assets { id name assetType } } }"""
 STATS_QUERY = """query AssetStatistics($id: String!) {
@@ -27,16 +27,16 @@ STATS_QUERY = """query AssetStatistics($id: String!) {
   }
 }"""
 
-# campo de la API -> (métrica, ayuda)
+# API field -> (metric, help)
 COUNTS = {
-    "totalRequests": ("cpwaf_asset_requests_total", "Peticiones totales vistas por el asset"),
-    "legitimateRequests": ("cpwaf_asset_legitimate_requests", "Peticiones legítimas"),
-    "maliciousRequests": ("cpwaf_asset_malicious_requests", "Peticiones maliciosas"),
-    "criticalRequests": ("cpwaf_asset_critical_requests", "Peticiones de severidad crítica"),
-    "highRequests": ("cpwaf_asset_high_requests", "Peticiones de severidad alta"),
-    "uniqueSources": ("cpwaf_asset_unique_sources", "IPs origen únicas"),
-    "uniqueUrls": ("cpwaf_asset_unique_urls", "URLs únicas"),
-    "elapsedTime": ("cpwaf_asset_learning_elapsed", "Tiempo de aprendizaje transcurrido (valor de la API)"),
+    "totalRequests": ("cpwaf_asset_requests_total", "Total requests seen by the asset"),
+    "legitimateRequests": ("cpwaf_asset_legitimate_requests", "Legitimate requests"),
+    "maliciousRequests": ("cpwaf_asset_malicious_requests", "Malicious requests"),
+    "criticalRequests": ("cpwaf_asset_critical_requests", "Critical severity requests"),
+    "highRequests": ("cpwaf_asset_high_requests", "High severity requests"),
+    "uniqueSources": ("cpwaf_asset_unique_sources", "Unique source IPs"),
+    "uniqueUrls": ("cpwaf_asset_unique_urls", "Unique URLs"),
+    "elapsedTime": ("cpwaf_asset_learning_elapsed", "Elapsed learning time (raw API value)"),
 }
 
 log = logging.getLogger("waf-api-exporter")
@@ -90,17 +90,17 @@ class WafApiCollector:
         if time.time() - self.cache_ts > CACHE_SECONDS:
             try:
                 self.cache, self.cache_ts, self.last_ok = self._fetch(), time.time(), 1
-            except Exception:  # noqa: BLE001 - se expone como cpwaf_api_up=0
-                log.exception("Error consultando la API de WAF")
+            except Exception:  # noqa: BLE001 - exposed as cpwaf_api_up=0
+                log.exception("Error querying the WAF API")
                 self.last_ok = 0
 
-        up = GaugeMetricFamily("cpwaf_api_up", "1 si la última consulta a la API de WAF fue correcta")
+        up = GaugeMetricFamily("cpwaf_api_up", "1 if the last WAF API query succeeded")
         up.add_metric([], self.last_ok)
         yield up
 
         labels = ["asset_id", "asset_name"]
         families = {k: GaugeMetricFamily(m, h, labels=labels) for k, (m, h) in COUNTS.items()}
-        info = GaugeMetricFamily("cpwaf_asset_info", "Estado del asset (valor 1)",
+        info = GaugeMetricFamily("cpwaf_asset_info", "Asset status (value is always 1)",
                                  labels=labels + ["status", "readiness", "recommendation"])
         for a, s in self.cache:
             lv = [a["id"], a["name"]]
@@ -118,6 +118,6 @@ if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
     REGISTRY.register(WafApiCollector())
     start_http_server(PORT)
-    log.info("Escuchando en :%d/metrics (API %s)", PORT, GW)
+    log.info("Listening on :%d/metrics (API %s)", PORT, GW)
     while True:
         time.sleep(3600)

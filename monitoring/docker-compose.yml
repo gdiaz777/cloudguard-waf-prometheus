@@ -1,6 +1,6 @@
-# Stack de monitorización para CloudGuard WAF: Prometheus + Grafana (+ exporter de API opcional).
-# Es el mismo para un WAF en Docker o en VMware: lo único que cambia es
-# prometheus/targets/waf-agents.yml (a qué IP:7465 se conecta Prometheus).
+# Monitoring stack for CloudGuard WAF: Prometheus + Grafana (+ optional API exporter).
+# It is the same for a WAF in Docker or in VMware: the only difference is
+# prometheus/targets/waf-agents.yml (which IP:7465 Prometheus connects to).
 name: waf-monitoring
 
 services:
@@ -10,14 +10,14 @@ services:
     command:
       - --config.file=/etc/prometheus/prometheus.yml
       - --storage.tsdb.retention.time=${PROMETHEUS_RETENTION:-15d}
-      - --web.enable-lifecycle          # permite recargar con: curl -X POST localhost:9090/-/reload
+      - --web.enable-lifecycle          # allows reloading with: curl -X POST localhost:9090/-/reload
     ports:
       - "9090:9090"
     volumes:
       - ./prometheus:/etc/prometheus:ro
       - prometheus-data:/prometheus
     extra_hosts:
-      - "host.docker.internal:host-gateway"   # solo lo usa el laboratorio Docker
+      - "host.docker.internal:host-gateway"   # only used by the Docker lab
     restart: unless-stopped
 
   grafana:
@@ -35,16 +35,16 @@ services:
     depends_on: [prometheus]
     restart: unless-stopped
 
-  # OPCIONAL: estadísticas por asset desde la API de Infinity Portal.
-  # Se arranca solo con: docker compose --profile api up -d
+  # OPTIONAL: per-asset statistics from the Infinity Portal API.
+  # Only started with: docker compose --profile api up -d
   waf-api-exporter:
     build: ./waf-api-exporter
     image: waf-api-exporter
     container_name: waf-api-exporter
     profiles: [api]
     environment:
-      - WAF_API_KEY=${WAF_API_KEY:?Define WAF_API_KEY en .env}
-      - WAF_API_KEY_SECRET=${WAF_API_KEY_SECRET:?Define WAF_API_KEY_SECRET en .env}
+      - WAF_API_KEY=${WAF_API_KEY:?Set WAF_API_KEY in .env}
+      - WAF_API_KEY_SECRET=${WAF_API_KEY_SECRET:?Set WAF_API_KEY_SECRET in .env}
       - WAF_API_GW=${WAF_API_GW:-https://cloudinfra-gw.portal.checkpoint.com}
     ports:
       - "9466:9466"

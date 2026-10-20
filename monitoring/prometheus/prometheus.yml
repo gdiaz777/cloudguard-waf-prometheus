@@ -1,21 +1,21 @@
 global:
-  scrape_interval: 15s       # coincide con el ciclo interno del agente; no bajar
+  scrape_interval: 15s       # matches the agent's internal cycle; do not lower it
   evaluation_interval: 15s
 
 rule_files:
   - /etc/prometheus/alerts.yml
 
 scrape_configs:
-  # Métricas del agente CloudGuard WAF (puerto 7465, activado con prometheus=true en el perfil).
-  # Los agentes se definen en targets/waf-agents.yml; Prometheus relee el fichero solo, sin reiniciar.
+  # CloudGuard WAF agent metrics (port 7465, enabled with prometheus=true in the profile).
+  # Agents are listed in targets/waf-agents.yml; Prometheus re-reads the file by itself, no restart needed.
   - job_name: openappsec
     metrics_path: /metrics
     scheme: http
     file_sd_configs:
       - files: [/etc/prometheus/targets/waf-agents.yml]
 
-  # OPCIONAL: exporter de estadísticas por asset (API de Infinity Portal).
-  # Vacío por defecto; ver docs/05-exporter-api-por-asset.md.
+  # OPTIONAL: per-asset statistics exporter (Infinity Portal API).
+  # Empty by default; see docs/05-per-asset-api-exporter.md.
   - job_name: waf-api
     scrape_interval: 60s
     scrape_timeout: 50s

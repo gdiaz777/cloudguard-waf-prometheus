@@ -16,7 +16,7 @@
     {
       "id": 1,
       "type": "row",
-      "title": "Agente CloudGuard WAF (métricas locales :7465)",
+      "title": "CloudGuard WAF agent (local metrics :7465)",
       "collapsed": false,
       "gridPos": {
         "x": 0,
@@ -28,7 +28,7 @@
     },
     {
       "id": 2,
-      "title": "Scrape del agente",
+      "title": "Agent scrape",
       "type": "stat",
       "datasource": {
         "type": "prometheus",
@@ -100,7 +100,7 @@
     },
     {
       "id": 3,
-      "title": "Detecciones IPS (rango)",
+      "title": "IPS detections (range)",
       "type": "stat",
       "datasource": {
         "type": "prometheus",
@@ -137,11 +137,11 @@
         "graphMode": "area",
         "textMode": "auto"
       },
-      "description": "Suma de las muestras de 15 s en el rango del dashboard. Aproximación: el agente publica coincidencias por ventana, no un contador acumulado."
+      "description": "Sum of the 15 s samples over the dashboard range. Approximation: the agent publishes matches per window, not a cumulative counter."
     },
     {
       "id": 4,
-      "title": "Prevenciones IPS (rango)",
+      "title": "IPS preventions (range)",
       "type": "stat",
       "datasource": {
         "type": "prometheus",
@@ -181,7 +181,7 @@
     },
     {
       "id": 5,
-      "title": "Reinicios de nano-servicios",
+      "title": "Nano-service restarts",
       "type": "stat",
       "datasource": {
         "type": "prometheus",
@@ -218,11 +218,11 @@
         "graphMode": "none",
         "textMode": "auto"
       },
-      "description": "Contador del watchdog. Si crece fuera de cambios de política/settings indica servicios inestables."
+      "description": "Watchdog counter. If it increases outside policy/settings changes, services are unstable."
     },
     {
       "id": 6,
-      "title": "Assets protegidos",
+      "title": "Protected assets",
       "type": "stat",
       "datasource": {
         "type": "prometheus",
@@ -259,11 +259,11 @@
         "graphMode": "none",
         "textMode": "auto"
       },
-      "description": "El agente solo publica este valor al arrancar los servicios; se toma el máximo de las últimas 24 h."
+      "description": "The agent only publishes this value when its services start; the maximum over the last 24 h is used."
     },
     {
       "id": 7,
-      "title": "Coincidencias del motor IPS por minuto",
+      "title": "IPS engine matches per minute",
       "type": "timeseries",
       "datasource": {
         "type": "prometheus",
@@ -328,7 +328,7 @@
     },
     {
       "id": 8,
-      "title": "CPU por proceso (%)",
+      "title": "CPU per process (%)",
       "type": "timeseries",
       "datasource": {
         "type": "prometheus",
@@ -372,11 +372,11 @@
           "mode": "multi"
         }
       },
-      "description": "Muestra intermitente: se usa el máximo de los últimos 2 min para no ver ceros entre muestras."
+      "description": "Intermittent samples: the maximum over the last 2 min is used to avoid zeros between samples."
     },
     {
       "id": 9,
-      "title": "Memoria física por proceso",
+      "title": "Physical memory per process",
       "type": "timeseries",
       "datasource": {
         "type": "prometheus",
@@ -420,12 +420,12 @@
           "mode": "multi"
         }
       },
-      "description": "El agente publica la memoria ~1 vez por minuto (0 entre muestras); se usa el máximo de 5 min. El HTTP Transaction Handler aparece sumado sobre todos sus workers."
+      "description": "The agent publishes memory about once per minute (0 in between); the 5 min maximum is used. The HTTP Transaction Handler is summed over all its workers."
     },
     {
       "id": 10,
       "type": "row",
-      "title": "Estadísticas por asset (API de Infinity Portal, opcional)",
+      "title": "Per-asset statistics (Infinity Portal API, optional)",
       "collapsed": false,
       "gridPos": {
         "x": 0,
@@ -437,7 +437,7 @@
     },
     {
       "id": 11,
-      "title": "API de gestión",
+      "title": "Management API",
       "type": "stat",
       "datasource": {
         "type": "prometheus",
@@ -509,7 +509,7 @@
     },
     {
       "id": 12,
-      "title": "Resumen por asset",
+      "title": "Per-asset summary",
       "type": "table",
       "datasource": {
         "type": "prometheus",
@@ -536,7 +536,7 @@
         {
           "refId": "B",
           "expr": "max by (asset_name)(cpwaf_asset_malicious_requests)",
-          "legendFormat": "maliciosas",
+          "legendFormat": "malicious",
           "datasource": {
             "type": "prometheus",
             "uid": "prometheus"
@@ -547,7 +547,7 @@
         {
           "refId": "C",
           "expr": "max by (asset_name)(cpwaf_asset_critical_requests)",
-          "legendFormat": "críticas",
+          "legendFormat": "critical",
           "datasource": {
             "type": "prometheus",
             "uid": "prometheus"
@@ -558,7 +558,7 @@
         {
           "refId": "D",
           "expr": "max by (asset_name)(cpwaf_asset_high_requests)",
-          "legendFormat": "altas",
+          "legendFormat": "high",
           "datasource": {
             "type": "prometheus",
             "uid": "prometheus"
@@ -569,7 +569,7 @@
         {
           "refId": "E",
           "expr": "max by (asset_name)(cpwaf_asset_unique_sources)",
-          "legendFormat": "IPs únicas",
+          "legendFormat": "unique IPs",
           "datasource": {
             "type": "prometheus",
             "uid": "prometheus"
@@ -595,10 +595,10 @@
             },
             "renameByName": {
               "Value #A": "Total",
-              "Value #B": "Maliciosas",
-              "Value #C": "Críticas",
-              "Value #D": "Altas",
-              "Value #E": "IPs únicas",
+              "Value #B": "Malicious",
+              "Value #C": "Critical",
+              "Value #D": "High",
+              "Value #E": "Unique IPs",
               "asset_name": "Asset"
             }
           }
@@ -607,7 +607,7 @@
     },
     {
       "id": 13,
-      "title": "Peticiones por asset",
+      "title": "Requests per asset",
       "type": "timeseries",
       "datasource": {
         "type": "prometheus",
@@ -650,11 +650,11 @@
           "mode": "multi"
         }
       },
-      "description": "Valor agregado en la nube; se actualiza con retraso respecto al tráfico real."
+      "description": "Value aggregated in the cloud; it lags behind real traffic."
     },
     {
       "id": 14,
-      "title": "Peticiones maliciosas por asset",
+      "title": "Malicious requests per asset",
       "type": "timeseries",
       "datasource": {
         "type": "prometheus",

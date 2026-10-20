@@ -1,22 +1,22 @@
-# Agentes CloudGuard WAF a monitorizar: <host>:7465
+# CloudGuard WAF agents to monitor: <host>:7465
 #
-# IMPORTANTE: no uses la etiqueta "agent"; el agente ya la publica (su UUID) y se pisaría.
-# Usa "gateway" para el nombre legible.
+# IMPORTANT: do not use the "agent" label; the agent already publishes it (its UUID) and it would be overwritten.
+# Use "gateway" for the readable name.
 
-# --- WAF en Docker (laboratorio de este repo, puerto 7465 publicado en el host) ---
+# --- WAF in Docker (this repo's lab, port 7465 published on the host) ---
 - targets: ["host.docker.internal:7465"]
   labels:
     gateway: lab-docker
     platform: docker
 
-# --- WAF en VMware (CloudGuard WAF Gateway): una entrada por VM, IP de gestión ---
+# --- WAF in VMware (CloudGuard WAF Gateway): one entry per VM, management IP ---
 # - targets: ["10.10.20.11:7465"]
 #   labels:
 #     gateway: waf-gw-01
 #     platform: vmware
-#     site: cpd-madrid
+#     site: dc-madrid
 # - targets: ["10.10.20.12:7465"]
 #   labels:
 #     gateway: waf-gw-02
 #     platform: vmware
-#     site: cpd-madrid
+#     site: dc-madrid

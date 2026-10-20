@@ -1,16 +1,16 @@
-# Secretos
+# Secrets
 .env
 **/.env
 
-# Certificados y claves
+# Certificates and keys
 *.key
 *.pem
 lab-docker-waf/nginx/certs/
 
-# Estado del agente (registro, política, logs)
+# Agent state (registration, policy, logs)
 lab-docker-waf/agent/
 
-# Varios
+# Misc
 .playwright-mcp/
 __pycache__/
 *.pyc

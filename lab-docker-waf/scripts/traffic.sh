@@ -1,6 +1,6 @@
 #!/bin/bash
-# Genera tráfico legítimo + ataques contra el WAF de forma continua (Ctrl+C para parar).
-# Uso: scripts/traffic.sh [https://host-del-asset]
+# Continuously generates legitimate traffic + attacks against the WAF (Ctrl+C to stop).
+# Usage: scripts/traffic.sh [https://asset-host]
 U=${1:-https://docker.example.com}
 ATT=("rest/products/search?q=%27%20or%201%3D1--" "?q=%3Cscript%3Ealert(1)%3C/script%3E" "?file=../../../../etc/passwd" "?cmd=;cat%20/etc/passwd" "?u=*)(uid=*))(|(uid=*" "?q=%27%20UNION%20SELECT%20username,password%20FROM%20users--")
 while true; do
